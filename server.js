@@ -29,16 +29,16 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/marketpla
 
 // Brand Schema
 const brandSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
+  name: { type: String, },
+  slug: { type: String,  unique: true },
   logo_url: String,
   description: String,
 }, { timestamps: true });
 
 // Category Schema (with hierarchical support)
 const categorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
+  name: { type: String, },
+  slug: { type: String,  unique: true },
   parent_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
   description: String,
   metadata: mongoose.Schema.Types.Mixed,
@@ -46,7 +46,7 @@ const categorySchema = new mongoose.Schema({
 
 // Seller Schema
 const sellerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   rating: { type: Number, default: 0 },
   join_date: { type: Date, default: Date.now },
@@ -55,10 +55,10 @@ const sellerSchema = new mongoose.Schema({
 
 // Product Variant Schema
 const productVariantSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  sku: { type: String, required: true, unique: true },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
+  sku: { type: String,  unique: true },
   name: String,
-  price: { type: Number, required: true },
+  price: { type: Number, },
   compare_price: Number,
   stock_quantity: { type: Number, default: 0 },
   barcode: String,
@@ -68,9 +68,9 @@ const productVariantSchema = new mongoose.Schema({
 
 // Media Schema
 const mediaSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
   variant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductVariant' },
-  url: { type: String, required: true },
+  url: { type: String, },
   type: { type: String, enum: ['image', 'video'], default: 'image' },
   alt_text: String,
   position: { type: Number, default: 0 },
@@ -78,9 +78,9 @@ const mediaSchema = new mongoose.Schema({
 
 // Pricing/Offer Schema
 const pricingSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
   variant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductVariant' },
-  price: { type: Number, required: true },
+  price: { type: Number, },
   currency: { type: String, default: 'DZD' },
   offer_type: { type: String, enum: ['fixed', 'auction', 'discount'], default: 'fixed' },
   start_date: Date,
@@ -92,24 +92,24 @@ const pricingSchema = new mongoose.Schema({
 
 // Review Schema
 const reviewSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', },
+  rating: { type: Number,  min: 1, max: 5 },
   title: String,
   comment: String,
 }, { timestamps: true });
 
 // Attributes/Specifications Schema
 const attributeSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  name: { type: String, required: true },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
+  name: { type: String, },
   value: mongoose.Schema.Types.Mixed,
   type: { type: String, enum: ['string', 'number', 'boolean'], default: 'string' },
 }, { timestamps: true });
 
 // Tag Schema
 const tagSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String,  unique: true },
 }, { timestamps: true });
 
 // Inventory Schema
@@ -124,9 +124,9 @@ const inventorySchema = new mongoose.Schema({
 
 // Audit/History Schema
 const auditSchema = new mongoose.Schema({
-  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+  product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', },
   changed_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  change_type: { type: String, required: true },
+  change_type: { type: String, },
   old_value: mongoose.Schema.Types.Mixed,
   new_value: mongoose.Schema.Types.Mixed,
   timestamp: { type: Date, default: Date.now },
@@ -134,9 +134,9 @@ const auditSchema = new mongoose.Schema({
 
 // Main Product Schema
 const productSchema = new mongoose.Schema({
-  sku: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
+  sku: { type: String,  unique: true },
+  name: { type: String, },
+  slug: { type: String,  unique: true },
   description: String,
   short_description: String,
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
@@ -169,46 +169,8 @@ const Product = mongoose.model('Product', productSchema);
 
 // ==================== ENDPOINTS ====================
 
-// 1. Voice to Text Endpoint
-app.post('/api/voice-to-text', upload.single('audio'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No audio file provided' });
-    }
 
-    // Using OpenAI Whisper API for voice to text
-    const formData = new FormData();
-    formData.append('file', fs.createReadStream(req.file.path));
-    formData.append('model', 'whisper-1');
-
-    const response = await axios.post(
-      'https://api.openai.com/v1/audio/transcriptions',
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-      }
-    );
-
-    // Clean up uploaded file
-    fs.unlinkSync(req.file.path);
-
-    res.json({
-      success: true,
-      transcription: response.data.text,
-    });
-  } catch (error) {
-    console.error('Voice to text error:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to convert voice to text',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// 2. Send Data to FastAPI Endpoint
+// 1. Send Data to FastAPI Endpoint
 app.post('/api/send-to-fastapi', async (req, res) => {
   try {
     const FASTAPI_URL = process.env.FASTAPI_URL || 'http://localhost:8000/api/process';
@@ -218,11 +180,15 @@ app.post('/api/send-to-fastapi', async (req, res) => {
         'Content-Type': 'application/json',
       },
     });
+    const data = response.data;
+     const savedProducts = Array.isArray(data)
+      ? await Promise.all(data.map(item => saveProductData(item)))
+      : [await saveProductData(data)];
 
     res.json({
       success: true,
       message: 'Data sent to FastAPI successfully',
-      response: response.data,
+      products: savedProducts,
     });
   } catch (error) {
     console.error('FastAPI send error:', error.response?.data || error.message);
@@ -233,47 +199,8 @@ app.post('/api/send-to-fastapi', async (req, res) => {
   }
 });
 
-// 3. Get Data from FastAPI and Store in MongoDB
-app.get('/api/fetch-and-store', async (req, res) => {
-  try {
-    const FASTAPI_GET_URL = process.env.FASTAPI_GET_URL || 'http://localhost:8000/api/data';
-    
-    // Fetch data from FastAPI
-    const response = await axios.get(FASTAPI_GET_URL);
-    const data = response.data;
-
-    // Store in MongoDB based on data structure
-    // Assuming the data contains product information
-    const savedProducts = [];
-
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        const product = await saveProductData(item);
-        savedProducts.push(product);
-      }
-    } else {
-      const product = await saveProductData(data);
-      savedProducts.push(product);
-    }
-
-    res.json({
-      success: true,
-      message: 'Data fetched and stored successfully',
-      products: savedProducts,
-    });
-  } catch (error) {
-    console.error('Fetch and store error:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to fetch and store data',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// Helper function to save product data
 async function saveProductData(data) {
   try {
-    // Create or find related entities
     let brand, category, seller;
 
     if (data.brand) {
@@ -300,7 +227,6 @@ async function saveProductData(data) {
       );
     }
 
-    // Create product
     const productData = {
       ...data.product,
       brand_id: brand?._id,
@@ -314,7 +240,7 @@ async function saveProductData(data) {
       { upsert: true, new: true }
     );
 
-    // Create variants if provided
+    // Save variants
     if (data.variants && Array.isArray(data.variants)) {
       for (const variantData of data.variants) {
         await ProductVariant.findOneAndUpdate(
@@ -325,14 +251,14 @@ async function saveProductData(data) {
       }
     }
 
-    // Create media if provided
+    // Save media
     if (data.media && Array.isArray(data.media)) {
       for (const mediaData of data.media) {
         await Media.create({ ...mediaData, product_id: product._id });
       }
     }
 
-    // Create attributes if provided
+    // Save attributes
     if (data.attributes && Array.isArray(data.attributes)) {
       for (const attrData of data.attributes) {
         await Attribute.create({ ...attrData, product_id: product._id });
@@ -346,7 +272,18 @@ async function saveProductData(data) {
   }
 }
 
-// 4. CRUD Endpoints for Product Management
+//2.store data manually
+app.post('/api/products/manual', async (req, res) => {
+  try {
+    const data = req.body;
+    const product = await saveProductData(data);
+    res.json({ success: true, product });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. CRUD Endpoints for Product Management
 
 // Get all products
 app.get('/api/products', async (req, res) => {
