@@ -113,7 +113,7 @@ app.post('/api/send-to-fastapi-ocr', upload.single('file'), async (req, res) => 
 app.post('/api/products/manual', async (req, res) => {
   try {
     const data = req.body;
-    const product = await saveProductData(data);
+    const product = await Product.create(data);
     res.json({ success: true, product });
   } catch (error) {
     res.status(500).json({ error: error.message });
