@@ -53,7 +53,6 @@ app.post('/api/send-to-fastapi', upload.single('file'), async (req, res) => {
     });
 
     const productsData = response.data.items;
-    console.log(productsData)
     const savedProducts = [];
     for (const data of productsData) {
       const product = new Product(data);
@@ -120,7 +119,31 @@ app.post('/api/products/manual', async (req, res) => {
   }
 });
 
-// 3. CRUD Endpoints for Product Management
+
+//3.Ai Assistance 
+app.post('/api/ai-assist', async (req, res) => {
+  try {
+    const {message} = req.body;
+    const Fast_Assisstance_URL = process.env.FASTAPI_AI_ASSISTANCE_URL
+
+    const response = await axios.post(Fast_Assisstance_URL, { message });
+
+    res.json({
+      success: true,
+      ai_response: response.data,
+    });
+  } catch (error) {
+    console.error('AI Assistance error:', error.response?.data || error.message);
+    res.status(500).json({
+      error: 'Failed to get AI Assistance',
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
+
+
+// 4. CRUD Endpoints for Product Management
 
 // Get all products
 app.get('/api/products', async (req, res) => {
